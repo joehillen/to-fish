@@ -28,6 +28,7 @@ function to -d 'Bookmarking system.'
 
   if test (count $argv) -lt 1
     __to_usage
+    return 1
   end
 
   # Catch usage errors
@@ -85,6 +86,7 @@ function to -d 'Bookmarking system.'
 
     case help
       __to_usage
+      return 0
 
     case '*'
       if test -f "$tofishdir/$argv[1]"
