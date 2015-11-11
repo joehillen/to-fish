@@ -1,3 +1,17 @@
+# Display general usage
+function __to_usage
+  echo 'Usage:'
+  echo ' to <bookmark>              # Go to <bookmark>'
+  echo ' to add <bookmark>          # Create a new bookmark with name <bookmark>'
+  echo '                            # that points to the current directory'
+  echo ' to rm <bookmark>           # Remove <bookmark>'
+  echo ' to (ls|list)               # List all bookmarks'
+  echo ' to (mv|rename) <old> <new> # Change the name of a bookmark'
+  echo '                            # from <old> to <new>'
+  return 1
+end
+
+
 function to -d 'Bookmarking system.'
 	set -l tofishdir ~/.tofish
 
@@ -9,17 +23,13 @@ function to -d 'Bookmarking system.'
 			echo "Failed to Create bookmark directory '$tofishdir'."
 			return 1
 		end
-	end
+  end
 
-	# Display general usage
-	if test (count $argv) -lt 1
-		echo 'Usage: to <bookmark>'
-		echo '       to <command> [command arguments]'
-		echo 'Where <command> is one of: add, rm, list, rename'
-		return 1
-	end
+  if test (count $argv) -lt 1
+    __to_usage
+  end
 
-	# Catch usage errors
+  # Catch usage errors
 	switch $argv[1]
 		case add rm
 			if not test (count $argv) -ge 2
@@ -69,11 +79,10 @@ function to -d 'Bookmarking system.'
 
 			mv "$tofishdir/$argv[2]" "$tofishdir/$argv[3]"
 
-		# Bonus commands!
-		case home
-			cd
+    case help
+      __to_usage
 
-		case '*'
+    case '*'
 			if test -f "$tofishdir/$argv[1]"
 				. "$tofishdir/$argv[1]"
 			else
