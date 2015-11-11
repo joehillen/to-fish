@@ -70,6 +70,7 @@ function to -d 'Bookmarking system.'
       for b in (ls -1 $tofishdir)
          echo ">> $b"
          cat $tofishdir/$b
+         echo
       end
 
     case mv rename # Rename a bookmark
