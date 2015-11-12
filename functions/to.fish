@@ -76,7 +76,7 @@ function to -d 'Bookmarking system.'
 
     case ls list # List all bookmarks
       for b in (ls -a1 $tofishdir)
-        if test "$b" -neq '.' and "$b" -neq '..'
+        if test "$b" -neq '.' -a "$b" -neq '..'
           set -l dest (readlink "$tofishdir/$b")
           echo "$b -> $dest"
         end
