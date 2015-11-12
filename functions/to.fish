@@ -75,9 +75,11 @@ function to -d 'Bookmarking system.'
       end
 
     case ls list # List all bookmarks
-      for b in (ls -1 $tofishdir)
-         set -l dest (readlink "$tofishdir/$b")
-         echo "$b -> $dest"
+      for b in (ls -a1 $tofishdir)
+        if test "$b" -neq '.' and "$b" -neq '..'
+          set -l dest (readlink "$tofishdir/$b")
+          echo "$b -> $dest"
+        end
       end
 
     case mv rename # Rename a bookmark
