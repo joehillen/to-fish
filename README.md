@@ -19,6 +19,8 @@ to your `config.fish` and run `fundle install`.
 Put `functions/to.fish` in `~/.config/fish/functions/` directory,
 and put `completions/to.fish` in `~/.config/fish/completions/`.
 
+or run `make`
+
 ## Usage
 
 `to` puts bookmarks in the directory `~/.tofish`
@@ -27,8 +29,10 @@ and put `completions/to.fish` in `~/.config/fish/completions/`.
 $ to help
 Usage:
  to <bookmark>              # Go to <bookmark>
- to add <bookmark>          # Create a new bookmark with name <bookmark>
-                            # that points to the current directory
+ to add [<bookmark>]        # Create a new bookmark with name <bookmark>
+                            # that points to the current directory.
+                            # If no <bookmark> is given,
+                            # the current directory name is used.
  to rm <bookmark>           # Remove <bookmark>
  to (ls|list)               # List all bookmarks
  to (mv|rename) <old> <new> # Change the name of a bookmark

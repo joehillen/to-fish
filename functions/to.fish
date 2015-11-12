@@ -2,8 +2,10 @@
 function __to_usage
   echo 'Usage:'
   echo ' to <bookmark>              # Go to <bookmark>'
-  echo ' to add <bookmark>          # Create a new bookmark with name <bookmark>'
-  echo '                            # that points to the current directory'
+  echo ' to add [<bookmark>]        # Create a new bookmark with name <bookmark>'
+  echo '                            # that points to the current directory.'
+  echo '                            # If no <bookmark> is given,'
+  echo '                            # the current directory name is used.'
   echo ' to rm <bookmark>           # Remove <bookmark>'
   echo ' to (ls|list)               # List all bookmarks'
   echo ' to (mv|rename) <old> <new> # Change the name of a bookmark'
@@ -33,7 +35,7 @@ function to -d 'Bookmarking system.'
 
   # Catch usage errors
   switch $argv[1]
-    case add rm
+    case rm
       if not test (count $argv) -ge 2
         echo "Usage: to $argv[1] BOOKMARK"
         return 1
@@ -48,15 +50,21 @@ function to -d 'Bookmarking system.'
 
   switch $argv[1]
     case add # Add a bookmark
-      if test -f "$tofishdir/$argv[2]"
-        echo "Error: The bookmark '$argv[2]' already exists."
-        echo "Use `to rm '$argv[2]'` to remove it first."
-        return 1
+      if test (count $argv) -eq 1
+        set bookmarkname (basename (pwd))
+      else
+        set bookmarkname $argv[2]
       end
 
-      echo "cd \""(pwd)"\"" > "$tofishdir/$argv[2]"
+      if test -h "$tofishdir/$bookmarkname"
+        echo "Error: The bookmark '$bookmarkname' already exists."
+        echo "Use `to rm '$bookmarkname'` to remove it first."
+        return 1
+      else
+        ln -s (pwd) "$tofishdir/$bookmarkname"
+      end
 
-      echo "Added bookmark '$argv[2]'."
+      echo "Added bookmark '$bookmarkname'."
 
     case rm # Remove a bookmark
       if rm -f "$tofishdir/$argv[2]"
@@ -68,16 +76,15 @@ function to -d 'Bookmarking system.'
 
     case ls list # List all bookmarks
       for b in (ls -1 $tofishdir)
-         echo ">> $b"
-         cat $tofishdir/$b
-         echo
+         set -l dest (readlink "$tofishdir/$b")
+         echo "$b -> $dest"
       end
 
     case mv rename # Rename a bookmark
-      if not test -f "$tofishdir/$argv[2]"
+      if not test -h "$tofishdir/$argv[2]"
         echo "The bookmark '$argv[2]' does not exist."
         return 1
-      else if test -f "$tofishdir/$argv[3]"
+      else if test -h "$tofishdir/$argv[3]"
         echo "Error: The destination bookmark '$argv[3]' already exists."
         echo "Use `to rm '$argv[3]'` to remove it first."
         return 1
@@ -90,8 +97,8 @@ function to -d 'Bookmarking system.'
       return 0
 
     case '*'
-      if test -f "$tofishdir/$argv[1]"
-        . "$tofishdir/$argv[1]"
+      if test -h "$tofishdir/$argv[1]"
+        echo "cd (readlink \"$tofishdir/$argv[1]\")" | source -
       else
         echo "The bookmark '$argv[1]' does not exist."
         return 1
