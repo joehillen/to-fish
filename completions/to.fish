@@ -9,12 +9,14 @@ complete -c to -n '__fish_use_subcommand' -x -a "rename" -d 'Rename a bookmark'
 complete -c to -n '__fish_use_subcommand' -x -a "help" -d 'Show Help'
 
 
-for b in (ls -a1 $tofishdir)
-  if test "$b" != '.' -a "$b" != '..'
-    complete -c to -f -a "$b" -d 'Bookmark'
+if test -d "$tofishdir"
+  for b in (ls -a1 $tofishdir)
+    if test "$b" != '.' -a "$b" != '..'
+      complete -c to -f -a "$b" -d 'Bookmark'
+    end
   end
-end
 
-for i in add rm mv ls help
-	complete -c to -n "contains '$i' (commandline -poc)" -x -a "(ls -1 '$tofishdir')" -d 'Bookmark'
+  for i in add rm mv ls help
+    complete -c to -n "contains '$i' (commandline -poc)" -x -a "(ls -1 '$tofishdir')" -d 'Bookmark'
+  end
 end
