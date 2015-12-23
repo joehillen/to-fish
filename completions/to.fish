@@ -1,5 +1,3 @@
-set -l tofishdir ~/.tofish
-
 complete -c to -n '__fish_use_subcommand' -x -a "add" -d 'Create a bookmark'
 complete -c to -n '__fish_use_subcommand' -x -a "rm" -d 'Remove a bookmark'
 complete -c to -n '__fish_use_subcommand' -x -a "ls" -d 'Lists all bookmarks'
