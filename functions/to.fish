@@ -14,6 +14,14 @@ function __to_usage
   return 1
 end
 
+function __to_update_bookmark_completions
+  set -l tofishdir ~/.tofish
+  if test -d "$tofishdir"
+    for b in (ls -a1 $tofishdir | grep -xv '.' | grep -xv '..')
+      complete -c to -f -a "$b" -d 'Bookmark'
+    end
+  end
+end
 
 function to -d 'Bookmarking system.'
   set -l tofishdir ~/.tofish
@@ -65,10 +73,13 @@ function to -d 'Bookmarking system.'
       end
 
       echo "Added bookmark '$bookmarkname'."
+      __to_update_bookmark_completions
 
     case rm # Remove a bookmark
       if rm -f "$tofishdir/$argv[2]"
         echo "Removed bookmark '$argv[2]'."
+        complete -e -c to -f -a "$argv[2]" -d 'Bookmark'
+        __to_update_bookmark_completions
       else
         echo "The bookmark '$argv[2]' does not exist."
         return 1
@@ -93,6 +104,8 @@ function to -d 'Bookmarking system.'
       end
 
       mv "$tofishdir/$argv[2]" "$tofishdir/$argv[3]"
+      complete -e -c to -f -a "$argv[2]" -d 'Bookmark'
+      __to_update_bookmark_completions
 
     case help
       __to_usage
