@@ -1,10 +1,17 @@
 # to-fish
 
-A bookmarking tool for Fish shell. This is a [fundle](https://github.com/tuvistavie/fundle) package.
+A bookmark directories in fish-shell
 
 ## Installation
 
-### Using [fundle](https://github.com/tuvistavie/fundle) (recommended)
+
+### [fishermane](https://github.com/fisherman/fisherman) (recommended)
+
+```
+fisher joehillen/to-fish
+```
+
+### [fundle](https://github.com/tuvistavie/fundle)
 
 Add
 
