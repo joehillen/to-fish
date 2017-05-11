@@ -17,7 +17,7 @@ end
 function __to_update_bookmark_completions
   set -l tofishdir ~/.tofish
   if test -d "$tofishdir"
-    for b in (ls -a1 $tofishdir | grep -xv '.' | grep -xv '..')
+    for b in (/bin/ls -a1 $tofishdir | grep -xv '.' | grep -xv '..')
       complete -c to -f -a "$b" -d 'Bookmark'
     end
   end
@@ -86,7 +86,7 @@ function to -d 'Bookmarking system.'
       end
 
     case ls list # List all bookmarks
-      for b in (ls -a1 $tofishdir)
+      for b in (/bin/ls -a1 $tofishdir)
         if test "$b" != '.' -a "$b" != '..'
           set -l dest (readlink "$tofishdir/$b")
           echo "$b -> $dest"
