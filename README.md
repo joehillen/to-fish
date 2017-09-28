@@ -5,7 +5,7 @@ A bookmark directories in fish-shell
 ## Installation
 
 
-### [fishermane](https://github.com/fisherman/fisherman) (recommended)
+### [fisherman](https://github.com/fisherman/fisherman) (recommended)
 
 ```
 fisher joehillen/to-fish
