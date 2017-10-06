@@ -1,34 +1,8 @@
 # to-fish
 
-A bookmark directories in fish-shell
+Bookmark directories in fish-shell
 
-## Installation
-
-
-### [fisherman](https://github.com/fisherman/fisherman) (recommended)
-
-```
-fisher joehillen/to-fish
-```
-
-### [fundle](https://github.com/tuvistavie/fundle)
-
-Add
-
-```
-fundle plugin 'joehillen/to-fish'
-```
-
-to your `config.fish` and run `fundle install`.
-
-### Manually
-
-Put `functions/to.fish` in `~/.config/fish/functions/` directory,
-and put `completions/to.fish` in `~/.config/fish/completions/`.
-
-or run `make`
-
-## Usage
+# Usage
 
 `to` puts bookmarks in the directory `~/.tofish`
 
@@ -46,3 +20,29 @@ Usage:
                             # from <old> to <new>
  to help                    # Show this message
 ```
+
+# Installation
+## [fisherman](https://github.com/fisherman/fisherman) (recommended)
+
+```
+fisher joehillen/to-fish
+```
+
+## [fundle](https://github.com/tuvistavie/fundle)
+
+Add the following to `~/.config/fish/config.fish` and run `fundle install`.
+
+```
+fundle plugin joehillen/to-fish
+```
+
+## Manually
+
+Run `make` or
+
+```
+cp functions/ev.fish ~/.config/fish/functions/
+cp completions/ev.fish ~/.config/fish/completions/
+```
+
+
