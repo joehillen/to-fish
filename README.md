@@ -22,10 +22,10 @@ Usage:
 ```
 
 # Installation
-## [fisherman](https://github.com/fisherman/fisherman) (recommended)
+## [Fisher](https://github.com/jorgebucaran/fisher) (recommended)
 
 ```
-fisher joehillen/to-fish
+fisher add joehillen/to-fish
 ```
 
 ## [fundle](https://github.com/tuvistavie/fundle)
