@@ -1,16 +1,16 @@
 # Display general usage
 function __to_usage
   echo 'Usage:'
-  echo ' to <bookmark>              # Go to <bookmark>'
-  echo ' to add [<bookmark>]        # Create a new bookmark with name <bookmark>'
-  echo '                            # that points to the current directory.'
-  echo '                            # If no <bookmark> is given,'
-  echo '                            # the current directory name is used.'
-  echo ' to rm <bookmark>           # Remove <bookmark>'
-  echo ' to (ls|list)               # List all bookmarks'
-  echo ' to (mv|rename) <old> <new> # Change the name of a bookmark'
-  echo '                            # from <old> to <new>'
-  echo ' to help                    # Show this message'
+  echo ' to <bookmark>               Go to <bookmark>'
+  echo ' to add [<bookmark>]         Create a new bookmark with name <bookmark>'
+  echo '                               that points to the current directory.'
+  echo '                               If no <bookmark> is given,'
+  echo '                               the current directory name is used.'
+  echo ' to rm <bookmark>            Remove <bookmark>'
+  echo ' to (ls|list)                List all bookmarks'
+  echo ' to (mv|rename) <old> <new>  Change the name of a bookmark'
+  echo '                               from <old> to <new>'
+  echo ' to help                       Show this message'
   return 1
 end
 
