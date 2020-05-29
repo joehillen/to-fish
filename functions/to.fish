@@ -1,16 +1,16 @@
 # Display general usage
 function __to_usage
   echo 'Usage:'
-  echo ' to BOOKMARK          Go to BOOKMARK'
-  echo ' to add [BOOKMARK]    Create a new bookmark with name BOOKMARK'
-  echo '                        that points to the current directory'
-  echo '                        DEFAULT: name of current directory'
-  echo ' to ls                List all bookmarks'
-  echo ' to mv OLD NEW        Change the name of a bookmark from OLD to NEW'
-  echo ' to rm BOOKMARK       Remove BOOKMARK'
-  echo ' to clean             Remove bookmarks that have a missing destination'
-  echo ' to resolve BOOKMARK  Print the destination of a bookmark'
-  echo ' to help              Show this message'
+  echo ' to (BOOKMARK|DIR)         Go to BOOKMARK or DIR'
+  echo ' to add [BOOKMARK] [DEST]  Create a BOOKMARK for DEST'
+  echo '                             Default BOOKMARK: name of current directory'
+  echo '                             Default DEST: path to current directory'
+  echo ' to ls                     List all bookmarks'
+  echo ' to mv OLD NEW             Change the name of a bookmark from OLD to NEW'
+  echo ' to rm BOOKMARK            Remove BOOKMARK'
+  echo ' to clean                  Remove bookmarks that have a missing destination'
+  echo ' to resolve BOOKMARK       Print the destination of a bookmark'
+  echo ' to help                   Show this message'
   return 1
 end
 
@@ -60,7 +60,7 @@ function __to_update_bookmark_completions
   complete -c to -k -n '__fish_use_subcommand' -x -a "clean" -d 'Remove bad bookmarks'
   complete -c to -k -n '__fish_use_subcommand' -x -a "mv" -d 'Rename bookmark'
   complete -c to -k -n '__fish_use_subcommand' -x -a "rm" -d 'Remove bookmark'
-  complete -c to -k -n '__fish_use_subcommand' -f -a "ls" -d 'Lists bookmarks'
+  complete -c to -k -n '__fish_use_subcommand' -f -a "ls" -d 'List bookmarks'
   complete -c to -k -n '__fish_use_subcommand' -x -a "add" -d 'Create bookmark'
   complete -c to -k -n '__fish_seen_subcommand_from rm' -x -a '(__to_ls)' -d 'Bookmark'
 
@@ -101,10 +101,10 @@ function to -d 'Bookmarking tool'
         return 1
       end
 
-    # subcommands that have an optional argument
+    # add has 2 optional arguments
     case add
-      if not test $numargs -ge 1 -a $numargs -le 2
-        echo "Usage: to $cmd [BOOKMARK]"
+      if not test $numargs -ge 1 -a $numargs -le 3
+        echo "Usage: to add [BOOKMARK] [DEST]"
         return 1
       end
 
@@ -119,14 +119,22 @@ function to -d 'Bookmarking tool'
   switch $cmd
     # Add a bookmark
     case add
-      if test (count $argv) -eq 1
-        set bm (basename (pwd))
+      set -l bm
+      set -l dest
+      if test -z "$argv[3]"
+        set dest (pwd)
       else
-        set bm $argv[2]
+        set dest "$argv[3]"
+      end
+
+      if test -z "$argv[2]"
+        set bm (basename "$dest")
+      else
+        set bm "$argv[2]"
       end
 
       if test -z (__to_resolve $bm)
-        ln -sT (pwd) (__to_bm_path $bm); or return $status
+        ln -sT "$dest" (__to_bm_path $bm); or return $status
         echo $bm "->" (__to_print $bm)
       else
         echo ERROR: Bookmark exists: $bm "->" (__to_resolve $bm)
