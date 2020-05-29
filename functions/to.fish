@@ -1,122 +1,160 @@
 # Display general usage
 function __to_usage
   echo 'Usage:'
-  echo ' to <bookmark>               Go to <bookmark>'
-  echo ' to add [<bookmark>]         Create a new bookmark with name <bookmark>'
-  echo '                               that points to the current directory.'
-  echo '                               If no <bookmark> is given,'
-  echo '                               the current directory name is used.'
-  echo ' to rm <bookmark>            Remove <bookmark>'
-  echo ' to (ls|list)                List all bookmarks'
-  echo ' to (mv|rename) <old> <new>  Change the name of a bookmark'
-  echo '                               from <old> to <new>'
-  echo ' to help                       Show this message'
+  echo ' to BOOKMARK        Go to BOOKMARK'
+  echo ' to add [BOOKMARK]  Create a new bookmark with name BOOKMARK'
+  echo '                      that points to the current directory.'
+  echo '                      DEFAULT: name of current directory.'
+  echo ' to ls              List all bookmarks'
+  echo ' to mv  OLD NEW     Change the name of a bookmark'
+  echo '                      from OLD to NEW'
+  echo ' to rm BOOKMARK     Remove BOOKMARK'
+  echo ' to clean           Remove bookmarks that have a missing destination'
+  echo ' to (-h|help)       Show this message'
   return 1
 end
 
-function __to_update_bookmark_completions
-  set -l tofishdir ~/.tofish
-  if test -d "$tofishdir"
-    for b in (/bin/ls -a1 $tofishdir | grep -xv '.' | grep -xv '..')
-      complete -c to -f -a "$b" -d 'Bookmark'
+function __to_dir
+  if test -z "$TO_DIR"
+    echo ~/.tofish
+  else
+    echo $TO_DIR
+  end
+end
+
+function __to_bm_path
+  set -l dir (__to_dir)
+  echo "$dir/$argv[1]"
+end
+
+function __to_resolve
+  readlink (__to_bm_path $argv[1]) | string replace -r "^$HOME" "~"
+end
+
+function __to_ls
+  set -l dir (__to_dir)
+  if test -d "$dir"
+    for bm in $dir/.* $dir/*
+      echo (basename $bm)
     end
   end
 end
 
-function to -d 'Bookmarking system.'
-  set -l tofishdir ~/.tofish
+function __to_rm
+  set -l bm $argv[1]
+  rm (__to_bm_path $bm); or return $status
+  __to_update_bookmark_completions
+end
 
-  # Create tofish directory
-  if not test -d "$tofishdir"
-    if mkdir "$tofishdir"
-      echo "Created bookmark directory '$tofishdir'."
-    else
-      echo "Failed to Create bookmark directory '$tofishdir'."
-      return 1
-    end
+function __to_update_bookmark_completions
+  complete -e -c to
+  complete -c to -k -x -a '(__fish_complete_directories)' -d 'Directory'
+  # FIXME: don't show directories for "mv rm ls clean"
+  # FIXME: no argument completions for "clean ls help"
+  complete -c to -k -x -s h -d 'Show Help'
+  complete -c to -k -n '__fish_use_subcommand' -x -a "help" -d 'Show Help'
+  complete -c to -k -n '__fish_use_subcommand' -x -a "clean" -d 'Remove bad bookmarks'
+  complete -c to -k -n '__fish_use_subcommand' -x -a "mv" -d 'Rename bookmark'
+  complete -c to -k -n '__fish_use_subcommand' -x -a "rm" -d 'Remove bookmark'
+  complete -c to -k -n '__fish_use_subcommand' -x -a "ls" -d 'Lists bookmarks'
+  complete -c to -k -n '__fish_use_subcommand' -x -a "add" -d 'Create bookmark'
+  complete -c to -k -n '__fish_seen_subcommand_from rm' -x -a '(__to_ls)' -d 'Bookmark'
+
+  for bm in (__to_ls | sort -r)
+    complete -c to -k -x -a "$bm" -d (__to_resolve "$bm")
   end
 
-  if test (count $argv) -lt 1
-    __to_usage
-    return 1
+end
+
+function to -d 'Bookmarking system.'
+  set -l dir (__to_dir)
+
+  # Create tofish directory
+  if not test -d "$dir"
+    if mkdir "$dir"
+      echo "Created bookmark directory: $dir"
+    else
+      echo "Failed to Create bookmark directory: $dir"
+      return 1
+    end
   end
 
   # Catch usage errors
   switch $argv[1]
     case rm
       if not test (count $argv) -ge 2
-        echo "Usage: to $argv[1] BOOKMARK"
+        echo "Usage: to rm BOOKMARK"
         return 1
       end
 
-    case mv rename
+    case mv
       if not test (count $argv) -ge 3
-        echo "Usage: to $argv[1] SOURCE DEST"
+        echo "Usage: to mv OLD NEW"
         return 1
       end
   end
 
   switch $argv[1]
-    case add # Add a bookmark
+    # Add a bookmark
+    case add
       if test (count $argv) -eq 1
-        set bookmarkname (basename (pwd))
+        set bm (basename (pwd))
       else
-        set bookmarkname $argv[2]
+        set bm $argv[2]
       end
 
-      if test -h "$tofishdir/$bookmarkname"
-        echo "Error: The bookmark '$bookmarkname' already exists."
-        echo "Use `to rm '$bookmarkname'` to remove it first."
+      if test -z (__to_resolve $bm)
+        ln -sT (pwd) (__to_bm_path $bm); or return $status
+        echo $bm "->" (__to_resolve $bm)
+      else
+        echo ERROR: Bookmark exists: $bm "->" (__to_resolve $bm)
         return 1
-      else
-        ln -s (pwd) "$tofishdir/$bookmarkname"
       end
 
-      echo "Added bookmark '$bookmarkname'."
       __to_update_bookmark_completions
 
-    case rm # Remove a bookmark
-      if rm -f "$tofishdir/$argv[2]"
-        echo "Removed bookmark '$argv[2]'."
-        complete -e -c to -f -a "$argv[2]" -d 'Bookmark'
-        __to_update_bookmark_completions
-      else
-        echo "The bookmark '$argv[2]' does not exist."
+    # Remove a bookmark
+    case rm
+      __to_rm $argv[2]
+
+    # List all bookmarks
+    case ls
+      for bm in (__to_ls)
+        set -l dest (__to_resolve "$bm")
+        echo "$bm -> $dest"
+      end
+
+    # Rename a bookmark
+    case mv
+      set -l old $argv[2]
+      set -l new $argv[3]
+      if test -z (__to_resolve $old)
+        echo "ERROR: Bookmark not found: $old"
+        return 1
+      else if test -n (__to_resolve $old)
+        echo "ERROR: Bookmark already exists: $new"
         return 1
       end
 
-    case ls list # List all bookmarks
-      for b in (/bin/ls -a1 $tofishdir)
-        if test "$b" != '.' -a "$b" != '..'
-          set -l dest (readlink "$tofishdir/$b")
-          echo "$b -> $dest"
-        end
-      end
-
-    case mv rename # Rename a bookmark
-      if not test -h "$tofishdir/$argv[2]"
-        echo "The bookmark '$argv[2]' does not exist."
-        return 1
-      else if test -h "$tofishdir/$argv[3]"
-        echo "Error: The destination bookmark '$argv[3]' already exists."
-        echo "Use `to rm '$argv[3]'` to remove it first."
-        return 1
-      end
-
-      mv "$tofishdir/$argv[2]" "$tofishdir/$argv[3]"
-      complete -e -c to -f -a "$argv[2]" -d 'Bookmark'
+      mv -n (__to_bm_path $old) (__to_bm_path $new); or return $status
       __to_update_bookmark_completions
 
-    case help
+    # Help
+    case -h help
       __to_usage
       return 0
 
+    # Default
     case '*'
-      if test -h "$tofishdir/$argv[1]"
-        echo "cd (readlink \"$tofishdir/$argv[1]\")" | source -
-      else
-        echo "The bookmark '$argv[1]' does not exist."
+      set -l bm $argv[1]
+      set -l dest (__to_resolve $bm)
+      if test -z "$bm"
+        __to_usage
         return 1
+      else if test -n "$dest"
+        echo "cd $dest" | source -
+      else
+        echo "cd \"$bm\"" | source -
       end
   end
 end
