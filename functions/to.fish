@@ -24,11 +24,11 @@ end
 
 function __to_bm_path
   set -l dir (__to_dir)
-  echo "$dir/$argv[1]"
+  echo "$dir/$argv"
 end
 
 function __to_resolve
-  readlink (__to_bm_path $argv[1]) | string replace -r "^$HOME" "~"
+  readlink (__to_bm_path $argv) | string escape | string replace -r "^$HOME" "~"
 end
 
 function __to_ls
@@ -41,8 +41,7 @@ function __to_ls
 end
 
 function __to_rm
-  set -l bm $argv[1]
-  rm (__to_bm_path $bm); or return $status
+  rm (__to_bm_path $argv[1]); or return $status
   __to_update_bookmark_completions
 end
 
@@ -61,7 +60,7 @@ function __to_update_bookmark_completions
   complete -c to -k -n '__fish_seen_subcommand_from rm' -x -a '(__to_ls)' -d 'Bookmark'
 
   for bm in (__to_ls | sort -r)
-    complete -c to -k -x -a "$bm" -d (__to_resolve "$bm")
+    complete -c to -k -x -a (echo $bm | string escape) -d (__to_resolve $bm)
   end
 
 end
@@ -120,7 +119,7 @@ function to -d 'Bookmarking system.'
     # List all bookmarks
     case ls
       for bm in (__to_ls)
-        set -l dest (__to_resolve "$bm")
+        set -l dest (__to_resolve $bm)
         echo "$bm -> $dest"
       end
 
@@ -154,7 +153,7 @@ function to -d 'Bookmarking system.'
       else if test -n "$dest"
         echo "cd $dest" | source -
       else
-        echo "cd \"$bm\"" | source -
+        echo "cd $bm" | source -
       end
   end
 end
