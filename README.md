@@ -1,48 +1,44 @@
 # to-fish
 
-Bookmark directories in fish-shell
+A directory bookmarking tool for fish-shell.
 
-# Usage
+## Usage
 
 `to` puts bookmarks in the directory `~/.tofish`
 
-```
+Use `set -U TO_DIR` to change where bookmarks are stored.
+
+```txt
 $ to help
 Usage:
- to <bookmark>              # Go to <bookmark>
- to add [<bookmark>]        # Create a new bookmark with name <bookmark>
-                            # that points to the current directory.
-                            # If no <bookmark> is given,
-                            # the current directory name is used.
- to rm <bookmark>           # Remove <bookmark>
- to (ls|list)               # List all bookmarks
- to (mv|rename) <old> <new> # Change the name of a bookmark
-                            # from <old> to <new>
- to help                    # Show this message
+ to BOOKMARK          Go to BOOKMARK
+ to add [BOOKMARK]    Create a new bookmark with name BOOKMARK
+                        that points to the current directory
+                        DEFAULT: name of current directory
+ to ls                List all bookmarks
+ to mv OLD NEW        Change the name of a bookmark from OLD to NEW
+ to rm BOOKMARK       Remove BOOKMARK
+ to clean             Remove bookmarks that have a missing destination
+ to resolve BOOKMARK  Print the destination of a bookmark
+ to help              Show this message
 ```
 
-# Installation
-## [Fisher](https://github.com/jorgebucaran/fisher) (recommended)
+## Installation
 
-```
+### [Fisher](https://github.com/jorgebucaran/fisher) (recommended)
+
+```txt
 fisher add joehillen/to-fish
 ```
 
-## [fundle](https://github.com/tuvistavie/fundle)
+### [fundle](https://github.com/tuvistavie/fundle)
 
 Add the following to `~/.config/fish/config.fish` and run `fundle install`.
 
-```
+```txt
 fundle plugin joehillen/to-fish
 ```
 
 ## Manually
 
-Run `make` or
-
-```
-cp functions/ev.fish ~/.config/fish/functions/
-cp completions/ev.fish ~/.config/fish/completions/
-```
-
-
+Run `make`
