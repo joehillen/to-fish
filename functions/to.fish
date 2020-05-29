@@ -11,6 +11,9 @@ function __to_usage
   echo ' to clean                  Remove bookmarks that have a missing destination'
   echo ' to resolve BOOKMARK       Print the destination of a bookmark'
   echo ' to help                   Show this message'
+  echo
+  echo "Bookmarks are stored in: $TO_DIR"
+  echo 'To change, run: set -U TO_DIR <dir>'
   return 1
 end
 
