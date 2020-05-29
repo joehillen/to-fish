@@ -28,11 +28,11 @@ function __to_bm_path
 end
 
 function __to_resolve
-  readlink (__to_bm_path $argv) | string escape | string replace -r "^$HOME" "~"
+  readlink (__to_bm_path $argv)
 end
 
-function __to_expand
-  readlink (__to_bm_path $argv)
+function __to_print
+  __to_resolve $argv | string escape | string replace -r "^$HOME" "~"
 end
 
 function __to_ls
@@ -65,7 +65,7 @@ function __to_update_bookmark_completions
   complete -c to -k -n '__fish_seen_subcommand_from rm' -x -a '(__to_ls)' -d 'Bookmark'
 
   for bm in (__to_ls | sort -r)
-    complete -c to -k -x -a (echo $bm | string escape) -d (__to_resolve $bm)
+    complete -c to -k -x -a (echo $bm | string escape) -d (__to_print $bm)
   end
 
 end
@@ -127,7 +127,7 @@ function to -d 'Bookmarking tool'
 
       if test -z (__to_resolve $bm)
         ln -sT (pwd) (__to_bm_path $bm); or return $status
-        echo $bm "->" (__to_resolve $bm)
+        echo $bm "->" (__to_print $bm)
       else
         echo ERROR: Bookmark exists: $bm "->" (__to_resolve $bm)
         return 1
@@ -142,7 +142,7 @@ function to -d 'Bookmarking tool'
     # List all bookmarks
     case ls
       for bm in (__to_ls)
-        set -l dest (__to_resolve $bm)
+        set -l dest (__to_print $bm)
         echo "$bm -> $dest"
       end
 
@@ -172,7 +172,7 @@ function to -d 'Bookmarking tool'
 
     # Resolve
     case resolve
-      __to_expand $argv[2]
+      __to_resolve "$argv[2]"
 
     # Help
     case -h --help help
