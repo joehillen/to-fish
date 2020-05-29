@@ -79,21 +79,39 @@ function to -d 'Bookmarking system.'
   end
 
   # Catch usage errors
-  switch $argv[1]
-    case rm
-      if not test (count $argv) -ge 2
-        echo "Usage: to rm BOOKMARK"
+  set -l cmd $argv[1]
+  set -l numargs (count $argv)
+  switch $cmd
+    # subcommands that don't take an argument
+    case ls help clean
+      if not test $numargs -eq 1
+        echo "Usage: to $cmd"
         return 1
       end
 
+    # subcommands that require an argument
+    case rm resolve
+      if not test $numargs -eq 2
+        echo "Usage: to $cmd BOOKMARK"
+        return 1
+      end
+
+    # subcommands that have an optional argument
+    case add
+      if not test $numargs -ge 1 -a $numargs -le 2
+        echo "Usage: to $cmd [BOOKMARK]"
+        return 1
+      end
+
+    # subcommands that require 2 arguments
     case mv
-      if not test (count $argv) -ge 3
+      if not test $numargs -eq 3
         echo "Usage: to mv OLD NEW"
         return 1
       end
   end
 
-  switch $argv[1]
+  switch $cmd
     # Add a bookmark
     case add
       if test (count $argv) -eq 1
