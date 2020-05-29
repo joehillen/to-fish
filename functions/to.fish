@@ -1,16 +1,17 @@
 # Display general usage
 function __to_usage
   echo 'Usage:'
-  echo ' to BOOKMARK        Go to BOOKMARK'
-  echo ' to add [BOOKMARK]  Create a new bookmark with name BOOKMARK'
-  echo '                      that points to the current directory.'
-  echo '                      DEFAULT: name of current directory.'
-  echo ' to ls              List all bookmarks'
-  echo ' to mv  OLD NEW     Change the name of a bookmark'
-  echo '                      from OLD to NEW'
-  echo ' to rm BOOKMARK     Remove BOOKMARK'
-  echo ' to clean           Remove bookmarks that have a missing destination'
-  echo ' to (-h|help)       Show this message'
+  echo ' to BOOKMARK          Go to BOOKMARK'
+  echo ' to add [BOOKMARK]    Create a new bookmark with name BOOKMARK'
+  echo '                        that points to the current directory.'
+  echo '                        DEFAULT: name of current directory.'
+  echo ' to ls                List all bookmarks'
+  echo ' to mv  OLD NEW       Change the name of a bookmark'
+  echo '                        from OLD to NEW'
+  echo ' to rm BOOKMARK       Remove BOOKMARK'
+  echo ' to clean             Remove bookmarks that have a missing destination'
+  echo ' to resolve BOOKMARK  Print the destination of a bookmark
+  echo ' to (-h|help)         Show this message'
   return 1
 end
 
@@ -31,6 +32,10 @@ function __to_resolve
   readlink (__to_bm_path $argv) | string escape | string replace -r "^$HOME" "~"
 end
 
+function __to_expand
+  readlink (__to_bm_path $argv)
+end
+
 function __to_ls
   set -l dir (__to_dir)
   if test -d "$dir"
@@ -48,14 +53,15 @@ end
 function __to_update_bookmark_completions
   complete -e -c to
   complete -c to -k -x -a '(__fish_complete_directories)' -d 'Directory'
-  # FIXME: don't show directories for "mv rm ls clean"
-  # FIXME: no argument completions for "clean ls help"
+  # FIXME: don't show directories for "mv rm ls clean resolve"
+  # FIXME: no argument completions for "clean ls help add"
   complete -c to -k -x -s h -d 'Show Help'
-  complete -c to -k -n '__fish_use_subcommand' -x -a "help" -d 'Show Help'
+  complete -c to -k -n '__fish_use_subcommand' -f -a "help" -d 'Show Help'
+  complete -c to -k -n '__fish_use_subcommand' -x -a "resolve" -d 'Bookmark Destination'
   complete -c to -k -n '__fish_use_subcommand' -x -a "clean" -d 'Remove bad bookmarks'
   complete -c to -k -n '__fish_use_subcommand' -x -a "mv" -d 'Rename bookmark'
   complete -c to -k -n '__fish_use_subcommand' -x -a "rm" -d 'Remove bookmark'
-  complete -c to -k -n '__fish_use_subcommand' -x -a "ls" -d 'Lists bookmarks'
+  complete -c to -k -n '__fish_use_subcommand' -f -a "ls" -d 'Lists bookmarks'
   complete -c to -k -n '__fish_use_subcommand' -x -a "add" -d 'Create bookmark'
   complete -c to -k -n '__fish_seen_subcommand_from rm' -x -a '(__to_ls)' -d 'Bookmark'
 
@@ -159,14 +165,18 @@ function to -d 'Bookmarking system.'
     # Clean
     case clean
       for bm in (__to_ls)
-        set -l dest (__to_resolve $bm | string replace -r '^~' "$HOME" | string unescape)
+        set -l dest (__to_expand $bm)
         if not test -d "$dest"
           rm -v (__to_bm_path $bm)
         end
       end
 
+    # Resolve
+    case resolve
+      __to_expand $argv[2]
+
     # Help
-    case -h help
+    case -h --help help
       __to_usage
       return 0
 
