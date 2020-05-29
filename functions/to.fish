@@ -138,6 +138,15 @@ function to -d 'Bookmarking system.'
       mv -n (__to_bm_path $old) (__to_bm_path $new); or return $status
       __to_update_bookmark_completions
 
+    # Clean
+    case clean
+      for bm in (__to_ls)
+        set -l dest (__to_resolve $bm | string replace -r '^~' "$HOME" | string unescape)
+        if not test -d "$dest"
+          rm -v (__to_bm_path $bm)
+        end
+      end
+
     # Help
     case -h help
       __to_usage
