@@ -32,7 +32,7 @@ function __to_resolve
 end
 
 function __to_print
-  __to_resolve $argv | string escape | string replace -r "^$HOME" "~"
+  __to_resolve $argv | string replace -r "^$HOME" "~"
 end
 
 function __to_ls
@@ -195,7 +195,7 @@ function to -d 'Bookmarking tool'
         __to_usage
         return 1
       else if test -n "$dest"
-        echo "cd $dest" | source -
+        echo "cd \"$dest\"" | source -
       else
         echo "cd \"$bm\"" | source -
       end
