@@ -10,7 +10,7 @@ function __to_usage
   echo '                        from OLD to NEW'
   echo ' to rm BOOKMARK       Remove BOOKMARK'
   echo ' to clean             Remove bookmarks that have a missing destination'
-  echo ' to resolve BOOKMARK  Print the destination of a bookmark
+  echo ' to resolve BOOKMARK  Print the destination of a bookmark'
   echo ' to (-h|help)         Show this message'
   return 1
 end
@@ -190,7 +190,7 @@ function to -d 'Bookmarking system.'
       else if test -n "$dest"
         echo "cd $dest" | source -
       else
-        echo "cd $bm" | source -
+        echo "cd \"$bm\"" | source -
       end
   end
 end
