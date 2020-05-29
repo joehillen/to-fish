@@ -3,15 +3,14 @@ function __to_usage
   echo 'Usage:'
   echo ' to BOOKMARK          Go to BOOKMARK'
   echo ' to add [BOOKMARK]    Create a new bookmark with name BOOKMARK'
-  echo '                        that points to the current directory.'
-  echo '                        DEFAULT: name of current directory.'
+  echo '                        that points to the current directory'
+  echo '                        DEFAULT: name of current directory'
   echo ' to ls                List all bookmarks'
-  echo ' to mv  OLD NEW       Change the name of a bookmark'
-  echo '                        from OLD to NEW'
+  echo ' to mv OLD NEW        Change the name of a bookmark from OLD to NEW'
   echo ' to rm BOOKMARK       Remove BOOKMARK'
   echo ' to clean             Remove bookmarks that have a missing destination'
   echo ' to resolve BOOKMARK  Print the destination of a bookmark'
-  echo ' to (-h|help)         Show this message'
+  echo ' to help              Show this message'
   return 1
 end
 
@@ -56,8 +55,8 @@ function __to_update_bookmark_completions
   # FIXME: don't show directories for "mv rm ls clean resolve"
   # FIXME: no argument completions for "clean ls help add"
   complete -c to -k -x -s h -d 'Show Help'
-  complete -c to -k -n '__fish_use_subcommand' -f -a "help" -d 'Show Help'
-  complete -c to -k -n '__fish_use_subcommand' -x -a "resolve" -d 'Bookmark Destination'
+  complete -c to -k -n '__fish_use_subcommand' -f -a "help" -d 'Show help'
+  complete -c to -k -n '__fish_use_subcommand' -x -a "resolve" -d 'Print bookmark destination'
   complete -c to -k -n '__fish_use_subcommand' -x -a "clean" -d 'Remove bad bookmarks'
   complete -c to -k -n '__fish_use_subcommand' -x -a "mv" -d 'Rename bookmark'
   complete -c to -k -n '__fish_use_subcommand' -x -a "rm" -d 'Remove bookmark'
@@ -71,7 +70,7 @@ function __to_update_bookmark_completions
 
 end
 
-function to -d 'Bookmarking system.'
+function to -d 'Bookmarking tool'
   set -l dir (__to_dir)
 
   # Create tofish directory
