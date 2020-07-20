@@ -137,7 +137,12 @@ function to -d 'Bookmarking tool'
       end
 
       if test -z (__to_resolve $bm)
-        ln -sT "$dest" (__to_bm_path $bm); or return $status
+        switch (uname)
+          case Darwin
+            ln -s "$dest" (__to_bm_path $bm); or return $status
+          case '*'
+            ln -sT "$dest" (__to_bm_path $bm); or return $status
+          end
         echo $bm "->" (__to_print $bm)
       else
         echo ERROR: Bookmark exists: $bm "->" (__to_resolve $bm)
