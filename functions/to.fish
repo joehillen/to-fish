@@ -35,7 +35,7 @@ function __to_resolve
 end
 
 function __to_print
-  __to_resolve $argv | string replace -r "^$HOME" "~"
+  __to_resolve $argv | string replace -r "^$HOME" "~" | string replace -r '^~$' "$HOME"
 end
 
 function __to_ls
