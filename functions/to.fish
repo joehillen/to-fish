@@ -26,8 +26,7 @@ function __to_dir
 end
 
 function __to_bm_path
-  set -l dir (__to_dir)
-  echo "$dir/$argv"
+  echo (__to_dir)"/$argv"
 end
 
 function __to_resolve
@@ -42,7 +41,7 @@ function __to_ls
   set -l dir (__to_dir)
   if test -d "$dir"
     for bm in $dir/.* $dir/*
-      echo (basename $bm)
+      basename $bm
     end
   end
 end
@@ -158,8 +157,7 @@ function to -d 'Bookmarking tool'
     # List all bookmarks
     case ls
       for bm in (__to_ls)
-        set -l dest (__to_print $bm)
-        echo "$bm -> $dest"
+        echo "$bm -> "(__to_print $bm)
       end
 
     # Rename a bookmark
