@@ -26,7 +26,7 @@ function __to_dir
 end
 
 function __to_bm_path
-  echo (__to_dir)"/$argv"
+  echo (__to_dir)/$argv
 end
 
 function __to_resolve
@@ -123,14 +123,14 @@ function to -d 'Bookmarking tool'
     # add has 2 optional arguments
     case add
       if not test $numargs -ge 1 -a $numargs -le 3
-        echo "Usage: to add [BOOKMARK] [DEST]"
+        echo 'Usage: to add [BOOKMARK] [DEST]'
         return 1
       end
 
     # subcommands that require 2 arguments
     case mv
       if not test $numargs -eq 3
-        echo "Usage: to mv OLD NEW"
+        echo 'Usage: to mv OLD NEW'
         return 1
       end
   end
@@ -161,7 +161,7 @@ function to -d 'Bookmarking tool'
           end
         echo $bm "->" (__to_print $bm)
       else
-        echo ERROR: Bookmark exists: $bm "->" (__to_resolve $bm)
+        echo ERROR: Bookmark exists: $bm '->' (__to_resolve $bm)
         return 1
       end
 
@@ -212,15 +212,25 @@ function to -d 'Bookmarking tool'
 
     # Default
     case '*'
-      set -l bm $argv[1]
-      set -l dest (__to_resolve $bm)
-      if test -z "$bm"
+      set -l name $argv[1]
+      if test -z "$name"
         __to_usage
         return 1
-      else if test -n "$dest"
+      end
+
+      set -l dest (__to_resolve $name)
+      if test -z $dest
+        if test -d "$name"
+          echo "cd \"$name\"" | source -
+        else
+          echo "to: No such bookmark “$name”" >&2
+          return 1
+        end
+      else if test -d "$dest"
         echo "cd \"$dest\"" | source -
       else
-        echo "cd \"$bm\"" | source -
+        echo "to: Destination for bookmark “$name” does not exist: $dest" >&2
+        return 1
       end
   end
 end
