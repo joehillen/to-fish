@@ -51,25 +51,42 @@ function __to_rm
   __to_update_bookmark_completions
 end
 
+function __to_complete_directories
+  set -l cl (commandline -ct | string split -m 1 /)
+  set -l bm $cl[1]
+  set -l bmdir (__to_resolve $bm 2>/dev/null)
+  if test -z $bmdir
+    __fish_complete_directories
+  else
+    set -e cl[1]
+    if test -z $cl
+      __fish_complete_directories $bmdir/ | string replace -r 'Directory$' $bm
+    else
+      __fish_complete_directories $bmdir/$cl | string replace -r 'Directory$' $bm
+    end
+  end
+end
+
 function __to_update_bookmark_completions
   complete -e -c to
-  complete -c to -k -x -a '(__fish_complete_directories)' -d 'Directory'
-  # FIXME: don't show directories for "mv rm ls clean resolve"
-  # FIXME: no argument completions for "clean ls help add"
-  complete -c to -k -x -s h -d 'Show Help'
-  complete -c to -k -n '__fish_use_subcommand' -f -a "help" -d 'Show help'
-  complete -c to -k -n '__fish_use_subcommand' -x -a "resolve" -d 'Print bookmark destination'
-  complete -c to -k -n '__fish_use_subcommand' -x -a "clean" -d 'Remove bad bookmarks'
-  complete -c to -k -n '__fish_use_subcommand' -x -a "mv" -d 'Rename bookmark'
-  complete -c to -k -n '__fish_use_subcommand' -x -a "rm" -d 'Remove bookmark'
-  complete -c to -k -n '__fish_use_subcommand' -f -a "ls" -d 'List bookmarks'
-  complete -c to -k -n '__fish_use_subcommand' -x -a "add" -d 'Create bookmark'
-  complete -c to -k -n '__fish_seen_subcommand_from rm' -x -a '(__to_ls)' -d 'Bookmark'
+  complete -c to -k -x -s h -l help -d 'Show help'
 
+  # Subcommands
+  complete -c to -k -n '__fish_use_subcommand' -f -a 'help' -d 'Show help'
+  complete -c to -k -n '__fish_use_subcommand' -x -a 'resolve' -d 'Print bookmark destination'
+  complete -c to -k -n '__fish_use_subcommand' -x -a 'clean' -d 'Remove bad bookmarks'
+  complete -c to -k -n '__fish_use_subcommand' -x -a 'mv' -d 'Rename bookmark'
+  complete -c to -k -n '__fish_use_subcommand' -x -a 'rm' -d 'Remove bookmark'
+  complete -c to -k -n '__fish_use_subcommand' -f -a 'ls' -d 'List bookmarks'
+  complete -c to -k -n '__fish_use_subcommand' -x -a 'add' -d 'Create bookmark'
+
+  # Directories
+  complete -c to -k -n '__fish_use_subcommand' -r -a '(__to_complete_directories)'
+
+  # Bookmarks
   for bm in (__to_ls | sort -r)
-    complete -c to -k -x -a (echo $bm | string escape) -d (__to_print $bm)
+    complete -c to -k -n '__fish_use_subcommand; or __fish_seen_subcommand_from rm mv resolve' -r -a (echo $bm | string escape) -d (__to_print $bm)
   end
-
 end
 
 function to -d 'Bookmarking tool'
