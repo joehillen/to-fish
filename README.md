@@ -28,7 +28,7 @@ Usage:
 ### [Fisher](https://github.com/jorgebucaran/fisher) (recommended)
 
 ```txt
-fisher add joehillen/to-fish
+fisher install joehillen/to-fish
 ```
 
 ### [fundle](https://github.com/tuvistavie/fundle)
