@@ -31,6 +31,7 @@ end
 
 function __to_resolve
   readlink (__to_bm_path $argv)
+  return $status
 end
 
 function __to_print
@@ -166,31 +167,35 @@ function to -d 'Bookmarking tool'
       end
 
       __to_update_bookmark_completions
+      return 0
 
     # Remove a bookmark
     case rm
       __to_rm $argv[2]
+      return $status
 
     # List all bookmarks
     case ls
       for bm in (__to_ls)
         echo "$bm -> "(__to_print $bm)
       end
+      return 0
 
     # Rename a bookmark
     case mv
       set -l old $argv[2]
       set -l new $argv[3]
-      if test -z (__to_resolve $old)
+      if not string length -q (__to_resolve $old)
         echo "ERROR: Bookmark not found: $old"
         return 1
-      else if test -n (__to_resolve $old)
+      else if string length -q (__to_resolve $new)
         echo "ERROR: Bookmark already exists: $new"
         return 1
       end
 
       mv -n (__to_bm_path $old) (__to_bm_path $new); or return $status
       __to_update_bookmark_completions
+      return 0
 
     # Clean
     case clean
@@ -200,10 +205,12 @@ function to -d 'Bookmarking tool'
           rm -v (__to_bm_path $bm)
         end
       end
+      return 0
 
     # Resolve
     case resolve
-      __to_resolve "$argv[2]"
+      __to_resolve $argv[2]
+      return $status
 
     # Help
     case -h --help help
