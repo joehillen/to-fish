@@ -55,7 +55,7 @@ function __to_bm_path
 end
 
 function __to_resolve
-  readlink (__to_bm_path $argv)
+  readlink (__to_bm_path $argv) 2>/dev/null
 end
 
 function __to_print
@@ -73,10 +73,65 @@ function __to_rm
   __to_update_bookmark_completions
 end
 
+function __to_add -a bm dest
+  # if there are no arguments
+  if test -z "$bm"
+    # use the current directory
+    set dest (pwd)
+    set bm (basename $dest)
+  else
+    # if there are two arguments
+    if test -n "$dest"
+      # use them as bookmark name and destination
+      set dest (realpath $dest)
+
+    # if there is only one argument
+    else
+
+      # if the argument is a directory
+      if string match -q '*/*' $bm && test -d "$bm"
+        # use it as the destination
+        set dest (realpath $bm)
+        set bm (basename $dest)
+      else
+        # if not a directory
+        # use it as the bookmark name
+        set dest (pwd)
+      end
+    end
+  end
+
+  if __to_resolve $bm > /dev/null
+    echo "ERROR: Bookmark exists: $bm -> "(__to_print $bm) >&2
+    return 1
+  end
+
+  if not test -d "$dest"
+    echo "ERROR: Destination does not exist: $dest" >&2
+    return 1
+  end
+
+  if string match -q '*/*' $bm
+    echo "ERROR: Bookmark name cannot contain '/': $bm" >&2
+    return 1
+  end
+
+  switch (uname)
+    case Darwin
+      command ln -s $dest (__to_bm_path $bm); or return $status
+    case '*'
+      command ln -sT $dest (__to_bm_path $bm); or return $status
+  end
+
+  echo $bm "->" (__to_print $bm)
+
+  __to_update_bookmark_completions
+end
+
 function __to_complete_directories
   set -l cl (commandline -ct | string split -m 1 /)
   set -l bm $cl[1]
-  set -l bmdir (__to_resolve $bm 2>/dev/null)
+  set -l bmdir (__to_resolve $bm)
   if test -z "$bmdir"
     __fish_complete_directories
   else
@@ -161,64 +216,8 @@ function to -d 'Bookmarking tool'
   switch $cmd
     # Add a bookmark
     case add
-      set -l bm
-      set -l dest
-
-      # if there are no arguments
-      if test -z "$argv[2]" 
-        # use the current directory
-        set dest (pwd)
-        set bm (basename $dest)
-      else
-        # if there are two arguments
-        if test -n "$argv[3]"
-          # use them as bookmark name and destination
-          set bm $argv[2]
-          set dest (realpath $argv[3])
-
-        # if there is only one argument
-        else
-
-          # if the argument is a directory
-          if string match -q '*/*' $argv[2] && test -d "$argv[2]"
-            # use it as the destination
-            set dest (realpath $argv[2])
-            set bm (basename $dest)
-          else
-            # use it as the bookmark name
-            set bm $argv[2]
-            set dest (pwd)
-          end
-        end
-      end
-
-      if __to_resolve $bm > /dev/null
-        echo "ERROR: Bookmark exists: $bm -> "(__to_print $bm) >&2
-        return 1
-      end
-
-
-      if not test -d "$dest"
-        echo "ERROR: Destination does not exist: $dest" >&2
-        return 1
-      end
-
-      if string match -q '*/*' $bm
-        echo "ERROR: Bookmark name cannot contain '/': $bm" >&2
-        return 1
-      end
-
-      switch (uname)
-        case Darwin
-          command ln -s $dest (__to_bm_path $bm); or return $status
-        case '*'
-          command ln -sT $dest (__to_bm_path $bm); or return $status
-      end
-
-      echo $bm "->" (__to_print $bm)
-
-      __to_update_bookmark_completions
-      return 0
+      __to_add $argv[2..-1]
+      return $status
 
     # Remove a bookmark
     case rm
@@ -235,17 +234,15 @@ function to -d 'Bookmarking tool'
     # Rename a bookmark
     case mv
       set -l old $argv[2]
-      set -l new $argv[3]
-      if not string length -q (__to_resolve $old)
+      if not __to_resolve $old > /dev/null
         echo "ERROR: Bookmark not found: $old"
-        return 1
-      else if string length -q (__to_resolve $new)
-        echo "ERROR: Bookmark already exists: $new"
         return 1
       end
 
-      command mv -n (__to_bm_path $old) (__to_bm_path $new); or return $status
-      __to_update_bookmark_completions
+      set -l new $argv[3]
+      __to_add $new (__to_resolve $old); or return $status
+      __to_rm $old; or return $status
+
       return 0
 
     # Clean
