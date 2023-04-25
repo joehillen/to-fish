@@ -146,6 +146,7 @@ function to -d 'Bookmarking tool'
     case add
       if not test $numargs -ge 1 -a $numargs -le 3
         echo 'Usage: to add [BOOKMARK] [DEST]'
+        echo '       to add DEST'
         return 1
       end
 
@@ -162,30 +163,59 @@ function to -d 'Bookmarking tool'
     case add
       set -l bm
       set -l dest
-      if test -z "$argv[3]"
+
+      # if there are no arguments
+      if test -z "$argv[2]" 
+        # use the current directory
         set dest (pwd)
+        set bm (basename $dest)
       else
-        set dest "$argv[3]"
-      end
+        # if there are two arguments
+        if test -n "$argv[3]"
+          # use them as bookmark name and destination
+          set bm $argv[2]
+          set dest (realpath $argv[3])
 
-      if test -z "$argv[2]"
-        set bm (basename "$dest")
-      else
-        set bm "$argv[2]"
-      end
+        # if there is only one argument
+        else
 
-      if test -z (__to_resolve $bm)
-        switch (uname)
-          case Darwin
-            ln -s "$dest" (__to_bm_path $bm); or return $status
-          case '*'
-            ln -sT "$dest" (__to_bm_path $bm); or return $status
+          # if the argument is a directory
+          if string match -q '*/*' $argv[2] && test -d "$argv[2]"
+            # use it as the destination
+            set dest (realpath $argv[2])
+            set bm (basename $dest)
+          else
+            # use it as the bookmark name
+            set bm $argv[2]
+            set dest (pwd)
           end
-        echo $bm "->" (__to_print $bm)
-      else
-        echo ERROR: Bookmark exists: $bm '->' (__to_resolve $bm)
+        end
+      end
+
+      if __to_resolve $bm > /dev/null
+        echo "ERROR: Bookmark exists: $bm -> "(__to_print $bm) >&2
         return 1
       end
+
+
+      if not test -d "$dest"
+        echo "ERROR: Destination does not exist: $dest" >&2
+        return 1
+      end
+
+      if string match -q '*/*' $bm
+        echo "ERROR: Bookmark name cannot contain '/': $bm" >&2
+        return 1
+      end
+
+      switch (uname)
+        case Darwin
+          command ln -s $dest (__to_bm_path $bm); or return $status
+        case '*'
+          command ln -sT $dest (__to_bm_path $bm); or return $status
+      end
+
+      echo $bm "->" (__to_print $bm)
 
       __to_update_bookmark_completions
       return 0
