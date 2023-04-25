@@ -31,24 +31,20 @@ end
 
 function __to_resolve
   readlink (__to_bm_path $argv)
-  return $status
 end
 
 function __to_print
-  __to_resolve $argv | string replace -r "^$HOME" "~" | string replace -r '^~$' "$HOME"
+  __to_resolve $argv | string replace -r "^$HOME" "~" | string replace -r '^~$' $HOME
 end
 
 function __to_ls
-  set -l dir (__to_dir)
-  if test -d "$dir"
-    for bm in $dir/.* $dir/*
-      basename $bm
-    end
+  for l in (__to_dir)/*
+    basename $l
   end
 end
 
 function __to_rm
-  rm (__to_bm_path $argv[1]); or return $status
+  command rm -v (__to_bm_path $argv[1]); or return $status
   __to_update_bookmark_completions
 end
 
@@ -193,16 +189,15 @@ function to -d 'Bookmarking tool'
         return 1
       end
 
-      mv -n (__to_bm_path $old) (__to_bm_path $new); or return $status
+      command mv -n (__to_bm_path $old) (__to_bm_path $new); or return $status
       __to_update_bookmark_completions
       return 0
 
     # Clean
     case clean
       for bm in (__to_ls)
-        set -l dest (__to_expand $bm)
-        if not test -d "$dest"
-          rm -v (__to_bm_path $bm)
+        if not test -d (__to_resolve $bm)
+          __to_rm $bm
         end
       end
       return 0
@@ -226,7 +221,7 @@ function to -d 'Bookmarking tool'
       end
 
       set -l dest (__to_resolve $name)
-      if test -z $dest
+      if test -z "$dest"
         if test -d "$name"
           echo "cd \"$name\"" | source -
         else
