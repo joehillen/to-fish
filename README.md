@@ -4,7 +4,7 @@ A directory bookmarking tool for fish-shell.
 
 ## Usage
 
-`to` puts bookmarks in the directory `~/.tofish`
+`to` puts bookmarks in the directory `~/.local/share/to-fish/`
 
 Use `set -U TO_DIR` to change where bookmarks are stored.
 
@@ -15,12 +15,16 @@ Usage:
  to add [BOOKMARK] [DEST]  Create a BOOKMARK for DEST
                              Default BOOKMARK: name of current directory
                              Default DEST: path to current directory
+ to add DEST               Create a bookmark for DEST if it is a directory
  to ls                     List all bookmarks
  to mv OLD NEW             Change the name of a bookmark from OLD to NEW
  to rm BOOKMARK            Remove BOOKMARK
  to clean                  Remove bookmarks that have a missing destination
  to resolve BOOKMARK       Print the destination of a bookmark
  to help                   Show this message
+
+Bookmarks are stored in: ~/.local/share/to-fish
+To change, run: set -U TO_DIR <dir>
 ```
 
 ## Installation

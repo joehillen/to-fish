@@ -5,6 +5,7 @@ function __to_usage
   echo ' to add [BOOKMARK] [DEST]  Create a BOOKMARK for DEST'
   echo '                             Default BOOKMARK: name of current directory'
   echo '                             Default DEST: path to current directory'
+  echo ' to add DEST               Create a bookmark for DEST if it is a directory'
   echo ' to ls                     List all bookmarks'
   echo ' to mv OLD NEW             Change the name of a bookmark from OLD to NEW'
   echo ' to rm BOOKMARK            Remove BOOKMARK'
@@ -17,12 +18,36 @@ function __to_usage
   return 1
 end
 
+# https://github.com/fish-shell/fish-shell/issues/6173#issuecomment-1067114363
+function is_empty_dir
+    test -d "$argv"
+    or return 1 # not a directory, so not an empty directory
+    # count counts how many arguments it received
+    # if this glob doesn't match, it won't get arguments
+    # and so it will return 1
+    # because we *want* an empty directory, turn that around.
+    # the `{.*,*}` ensures it matches hidden files as well.
+    not count $argv/{.*,*} >/dev/null
+end
+
 function __to_dir
-  if test -z "$TO_DIR"
-    echo ~/.tofish
-  else
+  if test -n "$TO_DIR"
     echo $TO_DIR
+    return
   end
+
+  set -l dir
+
+  if test -d "$HOME/.tofish" && not is_empty_dir $HOME/.tofish
+    set dir $HOME/.tofish
+  else if test -n "$XDG_DATA_HOME"
+    set dir $XDG_DATA_HOME/to-fish
+  else
+    set dir $HOME/.local/share/to-fish
+  end
+
+  set -U TO_DIR $dir
+  echo $TO_DIR
 end
 
 function __to_bm_path
@@ -52,11 +77,11 @@ function __to_complete_directories
   set -l cl (commandline -ct | string split -m 1 /)
   set -l bm $cl[1]
   set -l bmdir (__to_resolve $bm 2>/dev/null)
-  if test -z $bmdir
+  if test -z "$bmdir"
     __fish_complete_directories
   else
     set -e cl[1]
-    if test -z $cl
+    if test -z "$cl"
       __fish_complete_directories $bmdir/ | string replace -r 'Directory$' $bm
     else
       __fish_complete_directories $bmdir/$cl | string replace -r 'Directory$' $bm
@@ -91,7 +116,7 @@ function to -d 'Bookmarking tool'
 
   # Create tofish directory
   if not test -d "$dir"
-    if mkdir "$dir"
+    if command mkdir $dir
       echo "Created bookmark directory: $dir"
     else
       echo "Failed to Create bookmark directory: $dir"
